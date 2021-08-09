@@ -56,7 +56,7 @@ https://jaimemin.tistory.com/1549
 - pip 설치 
  https://archmond.net/archives/10976
  
-```
+```node.js
 py -m pip install httpie
 ```
 
@@ -73,7 +73,7 @@ localhost:4000/posts/my_second_posts title=foo content=bar --print=hHbB
 --print=hHbB (받은 것만 보려면 HB만 쓰기)
 
 11. 정규식 활용
-```
+```node.js
 replace(/\s/g, '_')
 ```
 
@@ -88,7 +88,7 @@ replace(/\s/g, '_')
 
 13. 코드의 추상화
 
-```
+```node.js
 /**
  * @typedef Route
  * @property {string} url
@@ -98,7 +98,7 @@ replace(/\s/g, '_')
  ```
  callback은 ()인자를 받지 않고, string으로 출력
  
- ```
+ ```node.js
   * @property {() => Promise<*>} callback
   ```
   callback이 () 인자를 받지않고, Promise로 결과물을 돌려준다.
