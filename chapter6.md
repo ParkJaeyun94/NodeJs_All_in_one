@@ -98,7 +98,128 @@ npm update ~000
 - 
 #### 03. npm, yarn 등 패키지 매니저와 package.json(2)
 
+![image](https://user-images.githubusercontent.com/69338643/128809050-52adc4c9-1701-480f-a019-d21e69b0b576.png)
+
 #### 04. Node.js 내장 객체들
 
-#### 05. 스탠다드 라이브러리
+!! node 공식문서 
 
+https://nodejs.org/dist/latest-v14.x/docs/api/
+
+1. __dirname, __filename
+- __dirname: 실행되는 파일의 디렉토리 이름
+- __filename: 실행되는 파일의 이름
+
+2. process
+- stdin, stdout : stream관련 입출력
+
+```node.js
+process.stdin.setEncoding('utf-8')
+process.stdin.on('data', (data) ={
+ console.log(data, data.length)
+ })
+```
+
+> cat .gitignore| node src/main.js
+
+치면 콘솔로 바로 결과가 나옴.
+
+- pipe: 한 스트림의 결과를 다른 스트림에 넣어줌
+
+```node.js
+
+process.stdin.pip(process.stdout)
+
+```
+> cat .gitignore| node src/main.js
+
+- exit
+
+- argv: 명령줄 인자를 파싱해서 인자로 가짐 -> cri 객체
+
+```node.js
+console.log(process.argv)
+```
+
+> node src/main.js --input 2
+
+
+3. setInterval, setTimeout
+
+```node.js
+setInterval(() => {
+ console.log('Interval')
+}, 1000)
+```
+1초 단위로 해라
+
+```node.js
+setTimeout(()  => {
+ console.log('timeout')
+}, 1000)
+```
+1초 뒤에 해라
+
+4. clearInterval, clearTimeout
+
+```node.js
+let count = 0
+const handle = setInterval(() => {
+ console.log('Interval')
+ count += 1
+ 
+ if (count === 4){
+  console.log('done!')
+  clearInterval(handle)
+ }
+}, 1000)
+```
+5초뒤에 인터벌 멈춤
+
+```node.js
+const timeoutHandle = setTimeout(()  => {
+ console.log('timeout')
+}, 1000)
+
+clearTimeout(timeoutHandle)
+```
+1초 뒤 실행하고 멈춤
+
+5. console
+
+
+#### 05. 스탠다드 라이브러리
+1. OS (운영체제에 대한 정보 얻어올 수 있음) 
+
+```node.js
+const os = require('os')
+```
+메소드 다양함
+- arc: 아키텍처 (ex. x64)
+- platform: ex. linux
+- cpus: cpu 정보
+
+2. fs
+
+3. Child processes
+
+4. DNS: 도메인
+5. Path
+```node.js
+const path = require('path')
+const fs = require('fs')
+// 파일 경로를 절대경로로 만들어줌
+const filePath = path.resolve(__dirname, './text.txt')
+const fileContent = fs.readFileSync(filePath, 'utf-8')
+console.log(fileContent)
+```
+
+6. HTTP:
+- createServer
+- get
+
+7. HTTP2: 새로운 버전의 프로토콜
+8. HTTPS: 보안모듈도 사용가능
+9. Net: 저수준 TCP 통신을 위해 사용
+- HTTP를 사용하지 않고 저수준 프로토콜 사용하는 경우
+- byte단위로 메세지 송수신 가능
