@@ -34,6 +34,8 @@ rs.on('data', data => { /* ... */ })
 ```
 인코딩을 지정하면 data가 string으로 돌아오게 됨.
 
+
+
 #### stream의 종류
 
 ##### 1. Readable
@@ -65,6 +67,16 @@ rs.on('data', data => { /* ... */ })
 - zlib streams
 - crypto streams : 암복호화 후 결과가 다름
 
+
+#### Stream 실습
+
+```node.js
+const  rs = fs.createReadStream('../local/big-file',{
+  encoding: 'utf-8',
+  highWaterMark: 65536 * 2
+})
+```
+highWaterMark 기능을 통해 roof 횟수를 줄인다. 
 
 
 
