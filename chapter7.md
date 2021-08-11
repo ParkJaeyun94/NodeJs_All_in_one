@@ -78,5 +78,69 @@ const  rs = fs.createReadStream('../local/big-file',{
 ```
 highWaterMark 기능을 통해 roof 횟수를 줄인다. 
 
+#### buffer 퍼포먼스 차이 확인해보기
+
+- 25배의 차이
+- 25배나 많은 메모리를 쓰는 것
+- 메모리에 한 덩어리를 올려두는 것
+- stream은 chunk 단위기 때문에 한순간 처리해야할 사이즈는 chunk단위
+- 메모리 측면에서 stream단위로 해야 유리하게 작동
+
+#### stream 사용시와 구현시의 주의점들
+
+##### 1. JSON 스트림 처리기 예시
+
+- json의 chunk가 어디서 잘릴지 예상할 수 없음
+
+```json
+{"data": 4}
+{"data": 63}
+{"data": 22}
+{"data": }
+{"data": 34}
+```
+
+##### 2. pipeline과 promise
+
+```node.js
+stream.pipeline(
+  fs.createReadStream('input'),
+  zlib.createGzip(),
+  fs.createWriteStream('compressed.gz'),
+```
+pipeline은 transform stream을 쉽게 활용하게 도와줌
+
+```node.js
+const fs = require('fs')
+const stream = require('stream')
+const zlib = require('zlib')
+const util = require('util')
+
+async function gzip() {
+  return util.promisify(stream.pipeline)(
+    fs.createReadStream('../local/big-file'),
+    zlib.createGzip(),
+    fs.createWriteStream('../local/big-file.gz'),
+  )
+}
+
+async function gunzip() {
+  return util.promisify(stream.pipeline)(
+    fs.createReadStream('../local/big-file.gz'),
+    zlib.createGunzip(),
+    fs.createWriteStream('../local/big-file.unzipped'),
+  )
+}
+
+async function main(){
+  await gzip()
+  await gunzip()
+}
+
+main()
+```
+
+- pipeline을 통해 stream연결
+
 
 
