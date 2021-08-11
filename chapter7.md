@@ -108,7 +108,8 @@ stream.pipeline(
   zlib.createGzip(),
   fs.createWriteStream('compressed.gz'),
 ```
-pipeline은 transform stream을 쉽게 활용하게 도와줌
+- pipeline은 transform stream을 쉽게 활용하게 도와줌
+- utill.promisify를 이용해서 코드를 깔끔하게 만듦
 
 ```node.js
 const fs = require('fs')
