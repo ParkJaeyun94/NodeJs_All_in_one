@@ -118,3 +118,185 @@ userRouter.get('/:id', (req, res) => {
 3. 업데이트
 - express는 body를 parse하라고 되어있지는 않음
 
+##### 3. Pug로 템플릿 그려보기
+
+```node
+
+npm install pug
+
+```
+
+```node
+// 원하는 폴더로 views 폴더를 옮길 수 있음.
+app.set('views', 'chap09/views')
+app.set('view engine', 'pug')
+```
+
+> localhost:5000/users/15 Accept: text/html  --print=hHbB
+
+> localhost:5000/users/15 Accept: application/json  --print=hHbB
+
+##### 4. 스태틱 파일 서빙
+
+```node
+app.use(express.static('chap09/public'))
+```
+
+```pug
+html
+    head
+        link(rel="stylesheet" href="/index.css")
+    body
+```
+
+static 파일이 있는 폴더의 루트를 지정,
+pug에서 css의 링크를 가져올 때, public에 있는 곳에서 가져오게 됨.
+
+* 문제가 있음!
+미들웨어(express)는 위에서 아래로 읽게 됨.
+만약에 
+
+```node
+app.use(express.json())
+app.use(express.static('chap09/public'))
+// 원하는 폴더로 views 폴더를 옮길 수 있음.
+app.set('views', 'chap09/views')
+app.set('view engine', 'pug')
+...
+const USERS = {
+  15: {
+    nickname: 'foo',
+  },
+}
+```
+이렇게 되어 있는데, public 디렉토리 안에 public/users/15 라고 불러오고자 하는 id와 동일한 이름이 있는 것임.
+미들웨어는 위에서 아래로 읽다보니, 가장 먼저 타고가는건 static폴더의 public을 먼저 찾게 되면서
+users가 아닌 파일 스택팅이 되게 됨.
+
+이것을 해결하는 방법은 두가지
+1. static 불러오는 명령문을 맨 아래에 둔다.
+2. prefix를 건다.
+```node
+app.use('/public', express.static('chap09/public'))
+```
+
+```pug
+html
+    head
+        link(rel="stylesheet" href="/public/index.css")
+    body
+```
+
+/public이라는 prefix를 따라야 static을 실행시켜준다.
+
+##### 5. 에러 핸들링
+
+1. id가 없을때 error
+
+```node
+router.param('id', (req, res, next, value) => {
+    const user = USERS[value]
+    if (!user) {
+      const err = new Error('User not found.')
+      err.statusCode = 404
+      throw err
+    }
+    req.user = user
+    next()
+})
+```
+```node
+// express 4개 인자를 받으면 error 핸들링이란걸 알고있음.
+app.use((err, req, res, next) => {
+res.statusCode = err.statusCode || 500
+  res.send(err.message)
+})
+```
+status code 까지 넣어서 보내줄 것
+
+2. async일 경우 error 어떻게 내보냄?
+
+```node
+router.param('id', async (req, res, next, value) => {
+  try {
+    const user = USERS[value]
+    if (!user) {
+      const err = new Error('User not found.')
+      err.statusCode = 404
+      throw err
+    }
+    req.user = user
+    next()
+  } catch (err) {
+    next(err)
+  }
+})
+```
+try catch를 넣어서 내보낼 것
+
+##### 6. Jest를 활용한 API 테스팅
+
+- API가 계속 복잡해짐.
+- 자동으로 시나리오를 짜서 테스트 해주는 tool
+
+- Jest: javascript를 테스트해주는 것 
+- supertest
+
+> npm install --save-dev jest supertest
+
+##### 7. 이미지 업로드 핸들링해보기
+
+> npm install multer
+
+app.js
+```node
+app.use('/uploads', express.static('uploads'))
+```
+
+user.js
+```node
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' })
+
+router.get('/:id', (req, res) => {
+  // req.accepts: string array 혹은 string을 받음, 받을 수 있는 것들을 리스트로 넣어주면 가장 잘 매치되는 것을 돌려줌.
+  const resMimeType = req.accepts(['json', 'html'])
+
+  if (resMimeType === 'json') {
+    res.send(req.user)
+  } else if (resMimeType === 'html') {
+    res.render('user-profile', {
+      nickname: req.user.nickname,
+      userId: req.params.id,
+      profileImageURL: `/uploads/${req.user.profileImageKey}`,
+    })
+  }
+})
+```
+
+```node
+router.post('/:id/profile', upload.single('profile'), (req, res) => {
+  const { user } = req
+  const { filename } = req.file
+  user.profileImageKey = filename
+
+  res.send(`User profile image uploaded: ${filename}`)
+})
+```
+
+user-profile.pug
+```pug
+html
+    head
+        link(rel="stylesheet" href="/public/index.css")
+    body
+      h1 User profile page
+      h2 Nickname
+      div= nickname
+
+      h2 Profile
+      img(src=profileImageURL).profileImage
+      form(action=`/users/${userId}/profile` method="post" enctype="multipart/form-data")
+          input(type="file" name="profile")
+          button Upload Profile Picture
+```
