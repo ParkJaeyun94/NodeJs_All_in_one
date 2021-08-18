@@ -64,5 +64,180 @@ JSON 형태이더라도 충분이 데이터베이스의 기능을 한다.
   * 관계도 직접 다룰 수 있는 대상으로 봄. 
 
 
+## MongoDB 모델링
 
+```node
+const { MongoClient } = require('mongodb');
+
+const uri = "mongodb+srv://<username>:<password>@cluster0.8t5vr.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const client = new MongoClient(uri,
+  { useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+```
+
+> npm install mongodb
+
+
+###### 1) mongoDB 사용
+
+```node
+const { MongoClient } = require('mongodb');
+
+const uri = `mongodb+srv://dbUser:qlalfqjsgh1@cluster0.8t5vr.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri,
+  { useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+```
+
+###### 2) mongoDB 함수 사용
+
+```node
+async function main() {
+  await client.connect()
+  await client.close()
+ }
+
+main()
+```
+###### 3) collection 정의
+
+```node
+const users = client.db('fc21').collection('users')
+```
+
+###### 4) Reset
+```node
+  await users.deleteMany({})
+```
+
+###### 5) Insert
+```node
+  await users.insertMany([
+    {
+      name: 'Foo',
+      birthYear: 2000,
+      contacts: [
+        {
+          type: 'phone',
+          number: '+82100000111'
+        },
+        {
+          type: 'home',
+          number: '+8210223311'
+        },
+      ],
+      city: '서울',
+    },
+    {
+      name: 'Bar',
+      birthYear: 1995,
+      contacts: [
+        {
+          type: 'phone',
+        },
+      ],
+      city: '부산',
+    },
+    {
+      name: 'Baz',
+      birthYear: 1990,
+      city: '부산',
+    },
+    {
+      name: 'Poo',
+      birthYear: 1993,
+      city: '서울',
+    }
+  ])
+```
+
+###### 6) Update
+
+```node
+  await users.updateOne(
+    {
+      name: 'Baz'
+    },
+    {
+      $set: {
+        name: 'Boo'
+      }
+    }
+  )
+```
+
+###### 7) Delete
+
+```node
+await users.deleteOne({
+    name: 'Baz',
+  })
+```
+
+###### 8) Find
+
+특정값 이상 필터, 정렬
+```node
+const cursor = users.find(
+    birthYear: {
+      $gte: 1990,
+    },
+    {
+      sort: {
+        birthYear: -1,
+      }
+    }
+  )
+  await cursor.forEach(console.log)
+```
+nesting된 데이터로 찾을 경우
+```node
+const cursor = users.find(
+{
+  'contacts.type': 'phone'
+}
+await cursor.forEach(console.log)
+```
+
+###### 9) 합치기, 필터링 조건 2개 이상일 경우, count하기
+
+```node
+const cursor = users.aggregate([
+    {
+      $lookup: {
+        from: 'cities',
+        localField: 'city',
+        foreignField: 'name',
+        as: 'city_info',
+      },
+    },
+    {
+      $match: {
+        $and: [
+          {
+            'city_info.population': {
+              $gte: 500
+            },
+          },
+          {
+            birthYear: {
+              $gte: 1995,
+            }
+          }
+        ]
+      }
+    }
+    ,
+    {
+      $count: 'num_users'
+    }
+  ])
+```
+
+### 참고하자
+
+https://docs.mongodb.com/drivers/node/v3.6/usage-examples/
 
