@@ -116,5 +116,8 @@ GITHUB_ACCESS_TOKEN = MY_TOEKEN
 #### 4. octokit 활용해 저장소에 접근해보기
 
 
-
 #### 5. 커스텀 규칙으로 저장소 관리하기 
+
+> https://docs.github.com/en/rest/reference/repos#compare-two-commits
+
+
