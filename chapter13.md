@@ -90,8 +90,31 @@ program.parse()
 
 #### 3. 토큰 발급받고 dotenv를 통해 프로젝트에서 사용하기
 
+> https://github.com/motdotla/dotenv
 
+.env 파일에 github 토큰 발급받아서 집어넣기
+
+![image](https://user-images.githubusercontent.com/69338643/130387730-3d9b0d10-203c-4cdd-9e6b-f5813b5d044b.png)
+
+> npm install dotenv
+
+```node
+require('dotenv').config()
+
+const { GITHUB_ACCESS_TOKEN } = process.env
+console.log('TOKEN: ', GITHUB_ACCESS_TOKEN )
+
+```
+
+.env
+```
+GITHUB_ACCESS_TOKEN = MY_TOEKEN
+```
+
+---
 
 #### 4. octokit 활용해 저장소에 접근해보기
+
+
 
 #### 5. 커스텀 규칙으로 저장소 관리하기 
